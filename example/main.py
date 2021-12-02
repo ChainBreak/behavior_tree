@@ -7,7 +7,7 @@ sys.path.append(str(root))
 import time
 import math
 
-from behaviortree import Sequence, Selector
+from behaviortree import Sequence, Selector, Latch
 from behaviors import FuelCheck, RunEngine, StopEngine, Refill, PowerDemandCheck
 class GeneratorController():
 
@@ -35,7 +35,7 @@ class GeneratorController():
             # Engine Start Sequence
             Sequence([
                 Selector([
-                    FuelCheck(self.state),
+                    Latch(FuelCheck(self.state)),
                     Sequence([
                         StopEngine(self.state),
                         Refill(self.state),
@@ -54,7 +54,7 @@ class GeneratorController():
         self.tick()
 
     def tick(self):
-        node,status = self.behavior_tree()
+        node,status = self.behavior_tree.tick()
         print(type(node),status)
         print(self.state)
         self.simulate_generator()

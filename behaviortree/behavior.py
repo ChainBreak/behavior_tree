@@ -1,16 +1,24 @@
+from .node import Node
 
-class Behavior():
+class Behavior(Node):
 
-    def __init__(self):
-        self.status = "failure"
+    def tick(self):
 
-    def __call__(self):
-        self.status = self.tick()
+        self.ticked = True 
+
+        # If we just became active
+        if not self.active:
+            self.active = True
+            self.on_start()
+
+        self.status = self.on_tick()
 
         if self.status == None:
             self.status = "running"
-            
-        return self,self.status
 
-    def tick(self):
-        raise NotImplementedError()
+        if self.status == "success" or self.status == "failure":
+            self.active = False
+            self.on_end()
+
+        return self, self.status
+

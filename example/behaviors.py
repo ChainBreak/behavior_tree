@@ -15,13 +15,13 @@ class EngineBehavior(Behavior):
 
 
 class FuelCheck(EngineBehavior):
-    def tick(self):
+    def on_tick(self):
         if self.state["fuel_needed"]:
             return "failure"
         return "success"
 
 class RunEngine(EngineBehavior):
-    def tick(self):
+    def on_tick(self):
         self.state["key_position"] = "on"
         
         if not self.state["engine_running"]:
@@ -33,7 +33,7 @@ class RunEngine(EngineBehavior):
         return "running"
 
 class StopEngine(EngineBehavior):
-    def tick(self):
+    def on_tick(self):
         self.state["key_position"] = "off"
 
         if self.state["engine_stopped"]:
@@ -42,7 +42,7 @@ class StopEngine(EngineBehavior):
         return "running"
 
 class Refill(EngineBehavior):
-    def tick(self):
+    def on_tick(self):
         self.state["refill_flag"] = True
         if self.state["fuel_level"] > 99:
             return "success"
@@ -54,7 +54,7 @@ class PowerDemandCheck(Behavior):
         self.state = state
         self.demand_threshold = demand_threshold
 
-    def tick(self):
+    def on_tick(self):
         if self.state["power_demand"] > self.demand_threshold:
             return "success"
         else:
