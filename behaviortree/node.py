@@ -29,7 +29,7 @@ class Node():
         return active_behavior, self.status
 
 
-    def check_if_ticked():
+    def check_if_ticked(self):
 
         if self.active and not self.ticked:
             self.active = False

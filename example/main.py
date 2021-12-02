@@ -7,8 +7,8 @@ sys.path.append(str(root))
 import time
 import math
 
-from behaviortree import Sequence, Selector, Latch
-from behaviors import FuelCheck, RunEngine, StopEngine, Refill, PowerDemandCheck
+from behaviortree import Sequence, Selector, Latch, StatefulSequence
+from behaviors import FuelCheck, RunEngine, StopEngine, Refill, PowerDemandCheck, FuelLow
 class GeneratorController():
 
     def __init__(self):
@@ -32,20 +32,23 @@ class GeneratorController():
     def create_behavior_tree(self):
 
         return Selector([
-            # Engine Start Sequence
-            Sequence([
-                Selector([
-                    Latch(FuelCheck(self.state)),
-                    Sequence([
-                        StopEngine(self.state),
-                        Refill(self.state),
-                    ])
-                ]),
-                PowerDemandCheck(self.state,30),
-                RunEngine(self.state),
-            ]),
-            # Else Stop the engine 
+            self.refill_engine_if_fuel_low(),
+            self.run_engine_if_demand_high(),
             StopEngine(self.state),
+        ])
+
+    
+    def refill_engine_if_fuel_low(self):
+        return StatefulSequence([
+            FuelLow(self.state),
+            StopEngine(self.state),
+            Refill(self.state),
+        ])
+
+    def run_engine_if_demand_high(self):
+        return Sequence([
+            PowerDemandCheck(self.state,30),
+            RunEngine(self.state),
         ])
 
 
@@ -55,9 +58,16 @@ class GeneratorController():
 
     def tick(self):
         node,status = self.behavior_tree.tick()
+        self.behavior_tree.check_if_ticked()
         print(type(node),status)
-        print(self.state)
+        self.print_state()
         self.simulate_generator()
+
+    def print_state(self):
+        print()
+        for key,value in self.state.items():
+            print(f"{key:15}: {value}")
+
 
     def simulate_generator(self):
         t = time.time()
@@ -75,12 +85,7 @@ class GeneratorController():
 
         # Clamp the level in the fuel tank between 0-100
         self.state["fuel_level"] = max(0,min(100,self.state["fuel_level"]))
-
-        if self.state["fuel_level"] < 5:
-            self.state["fuel_needed"] = True
-
-        if self.state["fuel_level"] > 99:
-            self.state["fuel_needed"] = False
+        
         # Count how long the engine has been cranking
         if self.state["crank_flag"]:
             self.state["crank_time"] += dt

@@ -20,6 +20,12 @@ class FuelCheck(EngineBehavior):
             return "failure"
         return "success"
 
+class FuelLow(EngineBehavior):
+    def on_tick(self):
+        if self.state["fuel_level"] < 5:
+            return "success"
+        return "failure"
+
 class RunEngine(EngineBehavior):
     def on_tick(self):
         self.state["key_position"] = "on"
