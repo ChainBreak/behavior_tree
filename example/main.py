@@ -7,7 +7,7 @@ sys.path.append(str(root))
 import time
 import math
 
-from behaviortree import Sequence, Selector, Latch, StatefulSequence
+from behaviortree import Sequence, Selector, Latch, SequenceWithMemory
 from behaviors import FuelCheck, RunEngine, StopEngine, Refill, PowerDemandCheck, FuelLow
 class GeneratorController():
 
@@ -39,7 +39,7 @@ class GeneratorController():
 
     
     def refill_engine_if_fuel_low(self):
-        return StatefulSequence([
+        return SequenceWithMemory([
             FuelLow(self.state),
             StopEngine(self.state),
             Refill(self.state),
